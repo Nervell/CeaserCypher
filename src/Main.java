@@ -1,189 +1,138 @@
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        String word = "Computer Science Awesome"; int shift = 777;
-        //Encrypted word
-        ArrayList<String> encrypted = seperator(encrypt(shift, word));
-        ArrayList<String> units = seperator(word);
-        System.out.println(encrypt(shift, word));
-        /*for (int i = 0; i < units.size(); i++) {
-            System.out.println(units.get(i).getWord());
-            System.out.println(units.get(i).isStatus());
-        }*/
+        Scanner reader = new Scanner(System.in);
+        //user interface
+        System.out.println("Do you want to" + "\n" + "1. Encrypt" + "\n" + "2. Decrypt");
+        int userChoice = reader.nextInt();
+        int shift = 0;
+        reader.nextLine();
 
-        //Decrypted word
-        String decrypted = decrypt(unitCorrector(encrypted), 0);
-        System.out.println(unitCorrector(seperator(word)));
-        System.out.println("Decrypted " + decrypted);
-        //System.out.println(check(seperator(word)));
-        //System.out.println(check(seperator(decrypted)));
-        //System.out.println(check(seperator(encrypt(shift, word))));
+        if (userChoice == 1) {
+            System.out.print("Enter a phrase you want to encrypt: ");
+            String phrase = reader.nextLine().toLowerCase();
+            System.out.print("Enter a shift: ");
+            shift = reader.nextInt();
+            reader.nextLine();
+
+            System.out.println("Original word: " + phrase + "\nEncrypted word: " + encrypt(phrase, shift));
+        } else if (userChoice == 2) {
+            System.out.print("Enter a phrase you want to decrypt: ");
+            String phrase = reader.nextLine().toLowerCase();
+            System.out.println("Do you know the shift?" + "\n1. Yes\n2. No");
+            int userInputShift = reader.nextInt();
+            boolean isShiftPresent = false;
+            reader.nextLine();
+
+            if (userInputShift == 1) {
+                System.out.print("Enter the shift: ");
+                shift = reader.nextInt();
+                isShiftPresent = true;
+            }
+            System.out.println("Encrypted phrase: " + phrase + "\nDecrypted phrase: " + decrypt(phrase, shift, isShiftPresent));
+        }
+
+
     }
 
-    public static String encrypt(int shift, String word) {
-        //Correct the range of the shift
+    public static StringBuilder encrypt(String phrase, int shift) {
+        String alphabet = "abcdefghijklmnopqrstuvwxyz"; StringBuilder encrypted = new StringBuilder();
+
+        //correct shift
         while (shift > 26) {
             shift -= 26;
         }
 
-        char c; String encrypted = ""; String alphabet = "abcdefghijklmnopqrstuvwxyz"; alphabet = alphabet.toUpperCase();
-        //loop that go through every letter in the word that going to be encrypted
-        for (int i = 0; i < word.length(); i++) {
-            //should add spaces if necessary
-            if (word.charAt(i) == ' ') {
-                encrypted += " ";
+        for (int i = 0; i < phrase.length(); i++) {
+
+            //add spaces
+            if (phrase.charAt(i) == ' ') {
+                encrypted.append(" ");
                 continue;
             }
-            //Should change the upper and lower cases
-            if (Character.isUpperCase(word.charAt(i))) {
-                alphabet = alphabet.toUpperCase();
-            } else {
-                alphabet = alphabet.toLowerCase();
-            }
 
-            //loop that go through every letter in the alphabet
-            for(int j = 0; j < alphabet.length(); j++) {
-                c = alphabet.charAt(j);
-                //check if letter in the alphabet match with the letter in the word
-                if (c == word.charAt(i)) {
-                    //correct the shift if it larger the length of the alphabet
-                    if ((j + shift) > 25) {
-                        j = ((j + shift) - 26);
-                        c = alphabet.charAt(j);
-                        encrypted += c;
-                        break;
-                    } else {
-                        j += shift;
-                        c = alphabet.charAt(j);
-                        encrypted += c;
-                        break;
-                    }
-                }
+
+            //index of letter in alphabet that equal to letter in the phrase with shift
+            int index = alphabet.indexOf(phrase.charAt(i)) + shift;
+            if (index > 25) {
+                encrypted.append(alphabet.charAt(index - 26));
+            } else {
+                encrypted.append(alphabet.charAt(index));
             }
         }
+
         return encrypted;
     }
 
-    public static String decrypt(ArrayList<Unit> words, int shift) {
-        Scanner reader = new Scanner(System.in);
-        String decrypted = ""; String alphabet = "abcdefghijklmnopqrstuvwxyz"; char c;
-        //correct shift length
+    public static StringBuilder decrypt(String phrase, int shift, boolean isShiftPresent) {
+        String alphabet = "abcdefghijklmnopqrstuvwxyz"; StringBuilder decrypted = new StringBuilder();
+
+        //correct shift
         while (shift > 26) {
             shift -= 26;
         }
-        //should go through every word in the array
-        for (int x = 0; x < words.size(); x++) {
-            //should go through every letter in the word of the array
-            for (int i = 0; i < words.get(x).getWord().length(); i++) {
-                //add spaces if necessary
-                if (i == (words.get(x).getWord().length() - 1)) {
-                    decrypted += " ";
-                    continue;
-                }
 
-                //correct upper and lower cases
-                if (Character.isUpperCase(words.get(x).getWord().charAt(i))) {
-                    alphabet = alphabet.toUpperCase();
-                } else {
-                    alphabet = alphabet.toLowerCase();
-                }
+        for (int i = 0; i < phrase.length(); i++) {
 
-                //go through every letter in the alphabet
-                for(int j = 0; j < alphabet.length(); j++) {
-                    c = alphabet.charAt(j);
-                    //correct shift range
-                    if (c == words.get(x).getWord().charAt(i)) {
-                        if ((j - shift) < 0) {
-                            j = ((j - shift) + 26);
-                            c = alphabet.charAt(j);
-                            decrypted += c;
-                            break;
-                        } else {
-                            c -= (char) shift;
-                            decrypted += c;
-                            break;
-                        }
-                    }
-                }
+            //add spaces
+            if (phrase.charAt(i) == ' ') {
+                decrypted.append(" ");
+                continue;
+            }
+
+            //index of letter in alphabet that equal to letter in the phrase with shift
+            int index = alphabet.indexOf(phrase.charAt(i)) - shift;
+            if (index < 0) {
+                decrypted.append(alphabet.charAt(index + 26));
+            } else {
+                decrypted.append(alphabet.charAt(index));
             }
         }
-        //check if the word is correct
-        if (check(unitCorrector(seperator(decrypted)))) {
-            System.out.print("Is this decryption correct? - " + decrypted + "\n" + "Yes or No: ");
-            String answer = reader.nextLine();
-            answer = answer.toLowerCase();
-            //if yes return decrypted word, if no start method again with shift + 1
-            if (answer.equals("yes")) {
+
+        if (isShiftPresent) {
+            return decrypted;
+        } else {
+            if (check(decrypted)) {
                 return decrypted;
             } else {
-                System.out.println(shift);
-                return decrypt(words, shift + 1);
+                return decrypt(phrase, shift + 1, false);
             }
-        } else {
-            return decrypt(words, shift + 1);
         }
     }
 
-    public static ArrayList<String> seperator(String phrase) {
-        ArrayList<String> words = new ArrayList<String>();
-        //separate phrase into a words
+    public static Boolean check(StringBuilder phrase) {
+        boolean result = true; Database database = new Database();
+
+        List<String> words = new ArrayList<>();
+        //separate phrase into words
         for (int i = 0; i < phrase.length(); i++) {
             if (phrase.charAt(i) == ' ') {
                 words.add(phrase.substring(0,i));
-                phrase = phrase.substring(i + 1);
+                phrase = new StringBuilder(phrase.substring(i + 1));
                 i = 0;
-            }
-        }
-        words.add(phrase.substring(0));
-        return words;
-    }
-
-    public static ArrayList<Unit> unitCorrector(ArrayList<String> words) {
-        ArrayList<Unit> wordsNumTwo = new ArrayList<Unit>();
-        for (int i = 0; i < words.size(); i++) {
-            wordsNumTwo.add(i, new Unit(false,words.get(i)));
-        }
-        return wordsNumTwo;
-    }
-
-    public static boolean check(ArrayList<Unit> words) {
-        boolean result = false; ArrayList<String> database = new ArrayList<String>();
-        //loop that go through every word in the array
-        for (int i = 0; i < words.size(); i++) {
-            String copy = words.get(i).getWord().toLowerCase();
-            //scanner for the database
-            try {
-                File myObj = new File("C:\\Users\\98034\\IdeaProjects\\Ceaser Cipher\\src\\words.txt");
-                Scanner myReader = new Scanner(myObj);
-                while (myReader.hasNextLine()) {
-                    String data = myReader.nextLine().toUpperCase();
-                    data = data.substring(0,1).toUpperCase() + data.substring(1).toLowerCase();
-                    //if word from the array match with the word from the database return true and break the loop, return false otherwise.
-                    database.add(data);
-
-                    //System.out.println(words.get(i).isStatus());
+                if (i + 1 == phrase.length()) {
+                    break;
                 }
-                myReader.close();
-            } catch (FileNotFoundException e) {
-                System.out.println("An error occurred.");
-                e.printStackTrace();
-            }
-            //break the loop if any of word in the loop is incorrect
-            /*if (!words.get(i).isStatus()) {
-                break;
-            }*/
-            if (database.contains(words.get(i).getWord())) {
-                words.get(i).setStatus(true);
-                result = true;
-            } else {
-                break;
             }
         }
+        words.add(String.valueOf(phrase));
+
+        //
+        List<Unit> wordsNumTwo = new ArrayList<>();
+        for (int i = 0; i < words.size(); i++) {
+            wordsNumTwo.add(i, new Unit(words.get(i), false));
+        }
+
+        for (Unit unit : wordsNumTwo) {
+            if (!database.getDatabase().contains(unit.getName())) {
+                return false;
+            }
+        }
+
         return result;
     }
+
 }
